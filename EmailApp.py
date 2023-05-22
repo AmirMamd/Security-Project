@@ -88,6 +88,8 @@ class App:
         print(tovar)
         subject = self.email_Subject.get()
         body = self.email_Body.get("1.0","end")
+        with open("in.txt", "w") as file:
+            file.write(body)
         att="Place holder for the key"
         self.send_email(subject, body,att, tovar)
 if __name__ == "__main__":
