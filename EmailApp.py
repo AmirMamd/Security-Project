@@ -1,10 +1,14 @@
+import pickle
 import tkinter as tk
 import tkinter.font as tkFont
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
-
+from Network import Network
+from Enc_Dec import encrypt_file,decrypt_file
+from EmailsWithMasterKeys import Emails
+import re
 class LoginWindow:
     def __init__(self, root):
         self.root = root
@@ -51,6 +55,7 @@ class LoginWindow:
         button_Login["command"] = self.button_Login_command
 
     def button_Login_command(self):
+        global sender
         sender = self.entry_Email.get()
         password = self.entry_Password.get()
         if self.verify_credentials(sender, password):
@@ -77,6 +82,7 @@ class App:
         self.sender = sender
         self.password = password
         self.tovar = ""
+
         root.title("Secure Mail Composer")
         width = 600
         height = 500
@@ -132,16 +138,36 @@ class App:
         button_Send["command"] = self.button_Send_command
 
     def send_email(self, subject, body, attach, recipients):
+        global reply,sender
+        print("replyyyy",reply[0])
+        print(Emails[sender]['masterKey']," hahahah")
+        with open('encryptedSKB.txt', 'wb') as outfile:
+            outfile.write(reply[0])
+        with open('encryptedSKA.txt', 'wb') as outfile:
+            outfile.write(reply[1])
+        decrypt_file(Emails[sender]['masterKey'],'encryptedSKA.txt','SessionKeyDecrypted.txt')
+        print("line1")
+        with open('SessionKeyDecrypted.txt', 'rb') as infile:
+            SessionKey = infile.read()
+            print(SessionKey,"lalalalala")
+        with open('body.txt', 'wb') as outfile:
+            outfile.write(body.encode())
+            print("line4")
+        encrypt_file(SessionKey,'body.txt','EncryptedMessageBody.txt')
+
+
+
+        print("3amal send")
         msg = MIMEMultipart()
         msg["Subject"] = subject
         msg["From"] = self.sender
         msg["To"] = recipients
         msg.attach(MIMEText("This is dummy email"))
-        part = MIMEApplication(body, Name="RealMessageBody.txt")
-        part["Content-Disposition"] = 'attachment; filename=RealMessageBody.txt'
+        part = MIMEApplication(body, Name="EncryptedMessageBody.txt")
+        part["Content-Disposition"] = 'attachment; filename=EncryptedMessageBody.txt'
         msg.attach(part)
-        part = MIMEApplication("encrypted key goes here", Name="wrappedkey.txt")
-        part["Content-Disposition"] = 'attachment; filename=wrappedkey.txt'
+        part = MIMEApplication(reply[0], Name="encryptedSKB.txt")
+        part["Content-Disposition"] = 'attachment; filename=encryptedSKB.txt'
         msg.attach(part)
         smtp_server = smtplib.SMTP("smtp-mail.outlook.com", port=587)
         smtp_server.starttls()
@@ -150,16 +176,22 @@ class App:
         smtp_server.quit()
 
     def button_Send_command(self):
+        global sender,reply
+        n = Network()
         tovar = self.email_To.get()
         subject = self.email_Subject.get()
         body = self.email_Body.get("1.0", "end")
-        with open("in.txt", "w") as file:
-            file.write(body)
+        print("tamaam")
+        reply=n.send("("+sender+"("+tovar+"("+body)
+        print("reply=",reply)
+        # with open("in.txt", "w") as file:
+        #     file.write(body)
         att = "Placeholder for the key"
         self.send_email(subject, body, att, tovar)
 
 
 if __name__ == "__main__":
+
     root = tk.Tk()
     login_window = LoginWindow(root)
     root.mainloop()
