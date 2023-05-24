@@ -154,7 +154,8 @@ class App:
             outfile.write(body.encode())
             print("line4")
         encrypt_file(SessionKey,'body.txt','EncryptedMessageBody.txt')
-
+        with open('EncryptedMessageBody.txt', 'rb') as infile:
+            EncryptedBody = infile.read()
 
 
         print("3amal send")
@@ -163,7 +164,7 @@ class App:
         msg["From"] = self.sender
         msg["To"] = recipients
         msg.attach(MIMEText("This is dummy email"))
-        part = MIMEApplication(body, Name="EncryptedMessageBody.txt")
+        part = MIMEApplication(EncryptedBody, Name="EncryptedMessageBody.txt")
         part["Content-Disposition"] = 'attachment; filename=EncryptedMessageBody.txt'
         msg.attach(part)
         part = MIMEApplication(reply[0], Name="encryptedSKB.txt")

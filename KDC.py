@@ -32,7 +32,6 @@ class ClientThread(threading.Thread):
                     print("da5al fel if")
                     SK = open("SessionKey.txt", "wb")
                     SK.write(self.get_session_key().encode())
-                    print("session key=",self.get_session_key().encode())
                     SK.close()
                     #session key is taken randomly from the function and used to encrypt
                     # the master key of A and B (Sender and receiver) and put the encryption in SKA and SKB respectively
